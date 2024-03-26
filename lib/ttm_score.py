@@ -28,8 +28,8 @@ class MetricEvaluator:
     def calculate_consistency(file_path, text):
         try:
             device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-            pt_file = hf_hub_download(repo_id="lukewys/laion_clap", filename="630k-audioset-best.pt")
-            clap_metric = CLAPTextConsistencyMetric(pt_file).to(device)
+            pt_file = hf_hub_download(repo_id="lukewys/laion_clap", filename="music_audioset_epoch_15_esc_90.14.pt")
+            clap_metric = CLAPTextConsistencyMetric(pt_file, model_arch='HTSAT-base').to(device)
             def convert_audio(audio, from_rate, to_rate, to_channels):
                 resampler = torchaudio.transforms.Resample(orig_freq=from_rate, new_freq=to_rate)
                 audio = resampler(audio)
@@ -60,7 +60,7 @@ class MusicQualityEvaluator:
 
         try:
             consistency_score = MetricEvaluator.calculate_consistency(file_path, text)
-            bt.logging.info(f'....... Music Prompt ......: {text} : ....... Consistency Score for model [ 630k-audioset-best.pt ]......: {consistency_score}')
+            bt.logging.info(f'....... Consistency Score ......: {consistency_score}')
         except:
             bt.logging.error(f"Failed to calculate Consistency score")
 
@@ -68,6 +68,17 @@ class MusicQualityEvaluator:
         normalized_snr = 1 / (1 + np.exp(-snr_score / 20))
         normalized_consistency = (consistency_score + 1) / 2 if consistency_score is not None and consistency_score >= 0 else 0
 
-        aggregate_score = (normalized_snr + normalized_consistency) / 2.0 if consistency_score > 0.5 else 0
-        bt.logging.info(f'.......Aggregate Score......: {aggregate_score}')
+        if consistency_score is not None:
+            if consistency_score > 0:
+                normalized_consistency = (consistency_score + 1) / 2  # Normalizes from [0, 1] to [0.5, 1]
+            else:
+                normalized_consistency = 0  # Ensures that a consistency_score of 0 or any negative value yields a normalized score of 0
+        else:
+            normalized_consistency = 0  # Handles cases where consistency_score is None
+
+        bt.logging.info(f'....... Normalized SNR {normalized_snr}DB - Normalized Consistency {normalized_consistency} ......')
+        bt.logging.info(f'....... SNR {snr_score}DB - Consistency {consistency_score} ......')
+        aggregate_score = 0.6 * normalized_snr + 0.4 * normalized_consistency 
+        aggregate_score = aggregate_score if consistency_score >= 0.2 else 0
+        bt.logging.info(f'....... Aggregate Score ......: {aggregate_score}')
         return aggregate_score

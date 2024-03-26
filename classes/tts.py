@@ -114,7 +114,6 @@ class TextToSpeechService(AIModelService):
             self.metagraph.sync(subtensor=self.subtensor)
             bt.logging.info(f"🔄 Syncing metagraph with subtensor.")
         
-        uids = self.metagraph.uids.tolist()
         if step % 5 == 0:
             async with self.lock:
                 # Use the API prompt if available; otherwise, load prompts from HuggingFace
@@ -138,7 +137,7 @@ class TextToSpeechService(AIModelService):
                 responses = self.query_network(filtered_axons, g_prompt)
                 self.process_responses(filtered_axons, responses, g_prompt)
 
-                if self.last_reset_weights_block + 50 < self.current_block:  #shaukat
+                if self.last_reset_weights_block + 50 < self.current_block:  
                     bt.logging.trace(f"Clearing weights for validators and nodes without IPs")
                     self.last_reset_weights_block = self.current_block        
                     # set all nodes without ips set to 0
@@ -157,7 +156,7 @@ class TextToSpeechService(AIModelService):
     
     def update_block(self):
         self.current_block = self.subtensor.block
-        if self.current_block - self.last_updated_block > 50:
+        if self.current_block - self.last_updated_block > 150:
             bt.logging.info(f"Updating weights. Last update was at block {self.last_updated_block}")
             bt.logging.info(f"Current block is {self.current_block}")
             self.update_weights(self.scores)
@@ -165,7 +164,7 @@ class TextToSpeechService(AIModelService):
         else:
             bt.logging.info(f"Updating weights. Last update was at block:  {self.last_updated_block}")
             bt.logging.info(f"Current block is: {self.current_block}")
-            bt.logging.info(f"Next update will be at block: {self.last_updated_block + 50}")
+            bt.logging.info(f"Next update will be at block: {self.last_updated_block + 150}")
             bt.logging.info(f"Skipping weight update. Last update was at block {self.last_updated_block}")
 
     def process_responses(self,filtered_axons, responses, prompt):

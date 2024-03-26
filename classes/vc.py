@@ -157,8 +157,11 @@ class VoiceCloningService(AIModelService):
                 if response is not None and isinstance(response, lib.protocol.VoiceClone) and response.clone_output is not None and response.dendrite.status_code == 200:
                     bt.logging.success(f"Received Voice Clone output from {axon.hotkey}")
                     self.handle_clone_output(response, axon,  prompt=text_input, input_file=input_file)
-                    vc_file = self.handle_clone_output(response, axon,  prompt=text_input, input_file=input_file)
-                    return vc_file
+                    if input_file:
+                        vc_file = self.handle_clone_output(response, axon,  prompt=text_input, input_file=input_file)
+                        return vc_file
+                    else:
+                        self.handle_clone_output(response, axon,  prompt=text_input, input_file=input_file)
                 elif response.dendrite.status_code != 403:
                     self.punish(axon, service="Voice Cloning", punish_message=response.dendrite.status_message)
                 else:
@@ -217,7 +220,7 @@ class VoiceCloningService(AIModelService):
         try:
             clone_score = CloneScore()
             # Call the scoring function from lib.reward
-            score = clone_score.compare_audio(input_path , output_path, text_input, self.max_mse)
+            score = clone_score.compare_audio(input_path , output_path, text_input)
             # self.max_mse = max_mse
             return score
         except Exception as e:

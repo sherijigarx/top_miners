@@ -23,6 +23,7 @@ import GPUtil
 import subprocess
 from huggingface_hub import hf_hub_download
 from lib import __spec_version__ as spec_version
+from classes.corcel_prompt import CorcelAPI
 
 class AIModelService:
     _scores = None
@@ -40,20 +41,16 @@ class AIModelService:
         self.metagraph = self.subtensor.metagraph(self.config.netuid)
 
         if not AIModelService._base_initialized:
-            # Perform actions that should only happen once
             bt.logging.info(f"Wallet: {self.wallet}")
             bt.logging.info(f"Subtensor: {self.subtensor}")
             bt.logging.info(f"Dendrite: {self.dendrite}")
             bt.logging.info(f"Metagraph: {self.metagraph}")
 
-            # Now mark these as initialized so they don't run again
             AIModelService._base_initialized = True
-
+        self.api = CorcelAPI()
         self.priority_uids(self.metagraph)
         self.p = inflect.engine()
         self.vcdnp = self.config.vcdnp
-        self.max_mse = self.config.max_mse
-        self.pt_file = hf_hub_download(repo_id="lukewys/laion_clap", filename="630k-best.pt")
         if AIModelService._scores is None:
             AIModelService._scores = self.metagraph.E.clone().detach()
         self.scores = AIModelService._scores
@@ -63,12 +60,10 @@ class AIModelService:
     def get_config(self):
         parser = argparse.ArgumentParser()
 
-        # Add arguments as per your original script
         parser.add_argument("--alpha", default=0.75, type=float, help="The weight moving average scoring.")
         parser.add_argument("--custom", default="my_custom_value", help="Adds a custom value to the parser.")
         parser.add_argument("--netuid", type=int, default=16, help="The chain subnet uid.")
         parser.add_argument("--vcdnp", type=int, default=15, help="Number of miners to query for each forward call.")
-        parser.add_argument("--max_mse", type=float, default=0.3, help="Maximum Mean Squared Error for Voice cloning.")
         parser.add_argument("--auto_update", type=str, default='yes', help="Auto update option for github repository updates.")
 
         # Add Bittensor specific arguments
