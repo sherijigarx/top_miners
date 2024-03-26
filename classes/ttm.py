@@ -27,7 +27,6 @@ audio_subnet_path = os.path.abspath(project_root)
 # Add the project root and 'AudioSubnet' directories to sys.path
 sys.path.insert(0, project_root)
 sys.path.insert(0, audio_subnet_path)
-from classes.corcel_prompt import get_TTM
 
 
 class MusicGenerationService(AIModelService):
@@ -70,7 +69,7 @@ class MusicGenerationService(AIModelService):
     async def main_loop_logic(self, step):
         g_prompt = None
         try:
-            c_prompt = get_TTM()
+            c_prompt = self.api.get_TTM()
         except Exception as e:
             bt.logging.error(f"An error occurred while fetching prompt: {e}")
             c_prompt = None
