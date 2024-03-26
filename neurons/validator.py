@@ -43,7 +43,7 @@ async def run_fastapi_with_ngrok(app):
     print('Public URL:', ngrok_tunnel.public_url)
     try:
         # Run the server using uvicorn
-        config = uvicorn.Config(app=app, host="0.0.0.0", port=14094) # 40421
+        config = uvicorn.Config(app=app, host="0.0.0.0", port=14094)
         server = uvicorn.Server(config)
         await server.serve()
     finally:
@@ -52,8 +52,8 @@ async def run_fastapi_with_ngrok(app):
 
 async def main():
     services = [
-        # TextToSpeechService(),
-        # MusicGenerationService(),
+        TextToSpeechService(),
+        MusicGenerationService(),
         VoiceCloningService(),
     ]
 
