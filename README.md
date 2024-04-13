@@ -8,6 +8,7 @@ In the first phase, we will start with text-to-speech (TTS), working in parallel
 The Validators are responsible for initiating the generation process by providing prompts to the Miners on the network. These prompts serve as the input text for the subsequent TTS model. The Validators evaluate the quality of the generated audio produced by the Miners and reward them based on the perceived quality.
 Please refer to the [Validator Documentation](docs/validator.md).
 
+For complete guide to the API usage and database installation, please refer to the [API Documentation](docs/API.md).
 
 ## Miners
 
